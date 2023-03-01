@@ -6,9 +6,19 @@ import { theme } from './colors';
 export default function App() {
   const [Working, setWorking] = useState(true);
   const [text, setText] = useState("");
+  const [toDos, setToDos] = useState({});
   const Travel = () => setWorking(false);
   const Work = () => setWorking(true);
-  const onChangeText = (event) => setText(event)
+  const onChangeText = (event) => setText(event);
+  const addToDo = () => {
+    if(text === "") {
+      return;
+    }
+    // save to do
+    const newToDos = Object.assign({}, toDos, {[Date.now()]: {text, work: Working}});
+    setToDos(newToDos);
+    setText("");
+  };
   return (
     <View style={styles.container}>
       <StatusBar style="auto"></StatusBar>
@@ -20,7 +30,7 @@ export default function App() {
           <Text style={{...styles.btnText,  color: !Working ? "white" : theme.gray}}>Travel</Text>
         </TouchableOpacity>
       </View>
-        <TextInput value={text} onChangeText={onChangeText} returnKeyType='send' placeholder={Working ? "Add a To Do" : "Where do you want to go?"} style={styles.input} />
+        <TextInput onSubmitEditing={addToDo} value={text} onChangeText={onChangeText} returnKeyType='done' placeholder={Working ? "Add a To Do" : "Where do you want to go?"} style={styles.input} />
     </View>
   );
 }
