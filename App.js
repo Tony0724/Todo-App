@@ -1,7 +1,10 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, ScrollView} from 'react-native';
 import { theme } from './colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const STROAGE_KEY = "@toDos"
 
 export default function App() {
   const [Working, setWorking] = useState(true);
@@ -10,13 +13,26 @@ export default function App() {
   const Travel = () => setWorking(false);
   const Work = () => setWorking(true);
   const onChangeText = (event) => setText(event);
-  const addToDo = () => {
+  const saveToDos = async(toSave) => {
+    const string = JSON.stringify(toSave)
+    await AsyncStorage.setItem(STROAGE_KEY, string)
+  }
+  const loadToDos = async () => {
+    const s = await AsyncStorage.getItem(STROAGE_KEY);
+    console.log(s);
+    s !== null ? setToDos(JSON.parse(s)) : null;
+    };
+  useEffect(() => {
+    loadToDos()
+  }, [])
+  const addToDo = async() => {
     if(text === "") {
       return;
     }
     // save to do
-    const newToDos = {...toDos, [Date.now()]: {text, work: Working}};
+    const newToDos = {...toDos, [Date.now()]: {text, Working}};
     setToDos(newToDos);
+    await saveToDos(newToDos)
     setText("");
   };
   return (
@@ -32,9 +48,11 @@ export default function App() {
       </View>
         <TextInput onSubmitEditing={addToDo} value={text} onChangeText={onChangeText} returnKeyType='done' placeholder={Working ? "Add a To Do" : "Where do you want to go?"} style={styles.input} />
       <ScrollView>
-        {Object.keys(toDos).map(key => <View key={key} style={styles.toDo}>
+        {Object.keys(toDos).map((key) => 
+          toDos[key].Working === Working ? <View key={key} style={styles.toDo}>
           <Text style={styles.toDoText}>{toDos[key].text}</Text>
-        </View>)}
+          </View> : null
+        )}
       </ScrollView>
     </View>
   );
