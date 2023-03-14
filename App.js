@@ -1,8 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react'
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, ScrollView} from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, ScrollView, Alert} from 'react-native';
 import { theme } from './colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Fontisto } from '@expo/vector-icons'; 
 
 const STROAGE_KEY = "@toDos"
 
@@ -19,7 +20,6 @@ export default function App() {
   }
   const loadToDos = async () => {
     const s = await AsyncStorage.getItem(STROAGE_KEY);
-    console.log(s);
     s !== null ? setToDos(JSON.parse(s)) : null;
     };
   useEffect(() => {
@@ -35,6 +35,14 @@ export default function App() {
     await saveToDos(newToDos)
     setText("");
   };
+  const deleteToDo = async(id) => {
+    Alert.alert("Delete To Do", "Are you sure?", [{text: "Cancel"}, {text: "I'm sure", onPress: () => {
+      const newToDos = {...toDos}
+      delete newToDos[id]
+      setToDos(newToDos);
+      saveToDos(newToDos)
+    }}])
+  }
   return (
     <View style={styles.container}>
       <StatusBar style="auto"></StatusBar>
@@ -51,6 +59,7 @@ export default function App() {
         {Object.keys(toDos).map((key) => 
           toDos[key].Working === Working ? <View key={key} style={styles.toDo}>
           <Text style={styles.toDoText}>{toDos[key].text}</Text>
+          <TouchableOpacity onPress={() => deleteToDo(key)}><Fontisto name="trash" size={18} color={theme.gray} /></TouchableOpacity>
           </View> : null
         )}
       </ScrollView>
@@ -88,6 +97,9 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between'
   },
   toDoText: {
     color: 'white',
